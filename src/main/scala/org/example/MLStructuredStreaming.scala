@@ -1,9 +1,9 @@
 package org.example
 
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.ml.classification.RandomForestClassificationModel
+import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.concat_ws
+import org.apache.spark.sql.functions._
 
 object MLStructuredStreaming {
   def main(args: Array[String]): Unit = {
@@ -22,7 +22,7 @@ object MLStructuredStreaming {
       .config("spark.master", "local")
       .getOrCreate()
 
-    val model = RandomForestClassificationModel.load(modelPath)
+    val model = PipelineModel.load(modelPath)
 
     import spark.implicits._
 
@@ -46,10 +46,9 @@ object MLStructuredStreaming {
           $"sepal_width",
           $"petal_length",
           $"petal_width",
-          $"prediction"
-        )
+          $"predictedLabel"
+        ).as("value")
       )
-      .as("value")
       .writeStream
       .option("checkpointLocation", checkpointLocation)
       .outputMode("append")
